@@ -1,5 +1,5 @@
 # Data-Mine-ECO-Food-Nutrition
-It'll make an excel sheet. Just put it in the root directory of your game or a server.
+Generates an excell spreadsheet with the values of Calories, Carbs, Fat, Protien, and Vitamins from every food in Eco.
 
 You'll need to have [xlsxwriter](https://xlsxwriter.readthedocs.io/ "XLSXWriter Documentation")
 
