@@ -51,17 +51,15 @@ def main():
 			print(e)
 			raise
 
-	#foodandseedfilecontent.length()
-	worksheet.add_table('A1:I{}'.format(len(foodandseedfilecontent)),{'columns': [{'header': 'Name'},
-                                          										  {'header': 'Calories'},
-																				  {'header': 'Carbs'},
-                                          										  {'header': 'Fat'},
-                                          										  {'header': 'Protein'},
-                                          										  {'header': 'Vitamins'},
-																				  {'header': 'Nutrition'},
-																				  {'header': 'Balance Mult.'},
-																				  {'header': 'Skill points/day'},
-                                          										  ]})
+	worksheet.add_table('A1:I{}'.format(len(foodandseedfilecontent)),{'columns': [  {'header': 'Name'},
+                                          						{'header': 'Calories'},
+											{'header': 'Carbs'},
+                                          						{'header': 'Fat'},
+                                          						{'header': 'Protein'},
+                                          						{'header': 'Vitamins'},
+											{'header': 'Nutrition'},
+											{'header': 'Balance Mult.'},
+											{'header': 'Skill points/day'},]})
 	workbook.close()
 
 if __name__ == '__main__':
