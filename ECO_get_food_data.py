@@ -5,15 +5,15 @@ from os import listdir
 from os.path import isfile, join
 
 def main():
-	foodfiles = [f for f in listdir(r".\Mods\AutoGen\Food") if isfile(join(r".\Mods\AutoGen\Food", f))]
-	seedfiles = [f for f in listdir(r".\Mods\AutoGen\Seed") if isfile(join(r".\Mods\AutoGen\Seed", f))]
+	foodfiles = [f for f in listdir(r".\Mods\__core__\AutoGen\Food") if isfile(join(r".\Mods\__core__\AutoGen\Food", f))]
+	seedfiles = [f for f in listdir(r".\Mods\__core__\AutoGen\Seed") if isfile(join(r".\Mods\__core__\AutoGen\Seed", f))]
 	foodandseedfilecontent = []
 
 	for file in foodfiles:
-		file_object = open(r".\Mods\AutoGen\Food\{f}".format(f=file),"r")
+		file_object = open(r".\Mods\__core__\AutoGen\Food\{f}".format(f=file),"r")
 		foodandseedfilecontent.append(file_object.read())
 	for file in seedfiles:
-		file_object = open(r".\Mods\AutoGen\Seed\{f}".format(f=file),"r")
+		file_object = open(r".\Mods\__core__\AutoGen\Seed\{f}".format(f=file),"r")
 		foodandseedfilecontent.append(file_object.read())
 
 	workbook = xlsxwriter.Workbook('fooddata.xlsx')
@@ -26,7 +26,7 @@ def main():
 			namemach = re.search(r"LocDisplayName.*\"(.*)\"",text)
 			worksheet.write(idx+1,0, namemach[1])
 
-			caloriematch = re.search(r"Calories.*n (-?\d{1,4})\;",text)
+			caloriematch = re.search(r"Calories.*(?:=>)? (-?\d{1,4})\;",text)
 			worksheet.write(idx+1,1, int(caloriematch[1]))
 
 			carbsmatch = re.search(r"Carbs = (\d{1,4})",text)
