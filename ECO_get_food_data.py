@@ -1,66 +1,53 @@
 import re
 import xlsxwriter
-
 from os import listdir
 from os.path import isfile, join
 
+def parse_file(file_path):
+    with open(file_path, "r") as file_object:
+        text = file_object.read()
+        namematch = re.search(r"LocDisplayName.*\"(.*)\"", text)
+        caloriematch = re.search(r"Calories.*(?:=>)? (-?\d{1,4})\;", text)
+        carbsmatch = re.search(r"Carbs = (\d{1,4})", text)
+        fatmatch = re.search(r"Fat = (\d{1,4})", text)
+        protmatch = re.search(r"Protein = (\d{1,4})", text)
+        vitaminsmatch = re.search(r"Vitamins = (\d{1,4})", text)
+        return {
+            "name": namematch[1] if namematch else None,
+            "calories": int(caloriematch[1]) if caloriematch else None,
+            "carbs": int(carbsmatch[1]) if carbsmatch else None,
+            "fat": int(fatmatch[1]) if fatmatch else None,
+            "protein": int(protmatch[1]) if protmatch else None,
+            "vitamins": int(vitaminsmatch[1]) if vitaminsmatch else None,
+        }
+
 def main():
-	foodfiles = [f for f in listdir(r".\Mods\AutoGen\Food") if isfile(join(r".\Mods\AutoGen\Food", f))]
-	seedfiles = [f for f in listdir(r".\Mods\AutoGen\Seed") if isfile(join(r".\Mods\AutoGen\Seed", f))]
-	foodandseedfilecontent = []
+    food_dir = r"./Mods/__core__/AutoGen/Food"
+    seed_dir = r"./Mods/__core__/AutoGen/Seed"
+    food_files = [f for f in listdir(food_dir) if isfile(join(food_dir, f))]
+    seed_files = [f for f in listdir(seed_dir) if isfile(join(seed_dir, f))]
 
-	for file in foodfiles:
-		file_object = open(r".\Mods\AutoGen\Food\{f}".format(f=file),"r")
-		foodandseedfilecontent.append(file_object.read())
-	for file in seedfiles:
-		file_object = open(r".\Mods\AutoGen\Seed\{f}".format(f=file),"r")
-		foodandseedfilecontent.append(file_object.read())
+    food_and_seed_data = [parse_file(join(food_dir, file)) for file in food_files] + [parse_file(join(seed_dir, file)) for file in seed_files]
 
-	workbook = xlsxwriter.Workbook('fooddata.xlsx')
-	worksheet = workbook.add_worksheet()
+    workbook = xlsxwriter.Workbook("fooddata.xlsx")
+    worksheet = workbook.add_worksheet()
+    num_format = workbook.add_format({"num_format": "###.##0"})
 
-	numformat = workbook.add_format({'num_format': '###.##0'})
+    worksheet.add_table('A1:I{}'.format(len(food_and_seed_data)),{'columns': [  {'header': 'Name'},{'header': 'Calories'},{'header': 'Carbs'},{'header': 'Fat'},{'header': 'Protein'},{'header': 'Vitamins'},{'header': 'Nutrition'},{'header': 'Balance Mult.'},{'header': 'Skill points/day'}]})
 
-	for idx, text in enumerate(foodandseedfilecontent):
-		try:
-			namemach = re.search(r"LocDisplayName.*\"(.*)\"",text)
-			worksheet.write(idx+1,0, namemach[1])
+    for row, data in enumerate(food_and_seed_data, start=1):
+        col = 0
+        worksheet.write(row, col, data.get("name"))
+        worksheet.write(row, col + 1, data.get("calories"))
+        worksheet.write(row, col + 2, data.get("carbs"))
+        worksheet.write(row, col + 3, data.get("fat"))
+        worksheet.write(row, col + 4, data.get("protein"))
+        worksheet.write(row, col + 5, data.get("vitamins"))
+        worksheet.write_formula(row, col + 6, f"=SUM(C{row + 1}:F{row + 1})", num_format)
+        worksheet.write_formula(row, col + 7, f"=G{row + 1}/(MAX(C{row + 1}:F{row + 1})*4)*2",num_format)
+        worksheet.write_formula(row, col + 8, f"=((G{row + 1}*B{row + 1})/B{row + 1})*H{row + 1}+12",num_format)
 
-			caloriematch = re.search(r"Calories.*n (-?\d{1,4})\;",text)
-			worksheet.write(idx+1,1, int(caloriematch[1]))
-
-			carbsmatch = re.search(r"Carbs = (\d{1,4})",text)
-			worksheet.write(idx+1,2, int(carbsmatch[1]) if not int(carbsmatch[1]) == None else 0)
-
-			fatmatch = re.search(r"Fat = (\d{1,4})",text)
-			worksheet.write(idx+1,3, int(fatmatch[1]) if not int(fatmatch[1]) == None else 0)
-
-			protmatch = re.search(r"Protein = (\d{1,4})",text)
-			worksheet.write(idx+1,4, int(protmatch[1]) if not int(protmatch[1]) == None else 0)
-
-			vitaminsmatch = re.search(r"Vitamins = (\d{1,4})",text)
-			worksheet.write(idx+1,5, int(vitaminsmatch[1]) if not int(vitaminsmatch[1]) == None else 0)
-
-			worksheet.write_formula(idx+1,6, '=SUM(C{}:F{})'.format(idx+2,idx+2),numformat)
-
-			worksheet.write_formula(idx+1,7, '=G{}/(MAX(C{}:F{})*4)*2'.format(idx+2,idx+2,idx+2),numformat)
-
-			worksheet.write_formula(idx+1,8, '=((G{}*B{})/B{})*H{}+12'.format(idx+2,idx+2,idx+2,idx+2),numformat)
-		except Exception as e:
-			print(text)
-			print(e)
-			raise
-
-	worksheet.add_table('A1:I{}'.format(len(foodandseedfilecontent)),{'columns': [  {'header': 'Name'},
-                                          						{'header': 'Calories'},
-											{'header': 'Carbs'},
-                                          						{'header': 'Fat'},
-                                          						{'header': 'Protein'},
-                                          						{'header': 'Vitamins'},
-											{'header': 'Nutrition'},
-											{'header': 'Balance Mult.'},
-											{'header': 'Skill points/day'},]})
-	workbook.close()
+    workbook.close()
 
 if __name__ == '__main__':
     main()
